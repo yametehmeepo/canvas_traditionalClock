@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<title>canvas绘制传统时钟</title>
+	<style>
+		html,body{
+			margin: 0;
+			padding: 0;
+		}
+		.textDiv{
+			text-align: center;
+			margin: 200px 0 0;
+		}
+		#canvas{
+			display: block;
+			margin: 10px auto;
+			/* border: 1px solid #eee;  */
+		}
+	</style>
+</head>
+<body>
+	<div class="textDiv" id="textDiv"></div>
+	<canvas id="canvas">canvas</canvas>
+	<script>
+		var width = 360;
+		var r = width/2;
+		var rem = width/200;
+		var timer;
+		window.onload = function(){
+			var canvas = document.getElementById('canvas');
+			canvas.width = width;
+			canvas.height = width;
+			var context = canvas.getContext('2d');
+			draw(context);
+			timer = setInterval(function(){
+				draw(context);
+			}, 1000);
+		}
+		function draw(cxt){
+			cxt.clearRect(0, 0, cxt.canvas.width, cxt.canvas.height);
+			var now = new Date();
+			//var now = new Date('1988/12/17 00:30:59');
+			var textDoM = document.getElementById('textDiv');
+			var Y = now.getFullYear();
+			var M = now.getMonth() + 1;
+			var D = now.getDate();
+			var Hour = now.getHours();
+			var Minute = now.getMinutes();
+			var Second = now.getSeconds();
+			var text = Hour > 12 ? Y + '年' + M + '月' + D + '日' + ' ' + '下午' : Y + '年' + M + '月' + D + '日' + ' ' + '上午';
+			textDoM.style.fontSize = 14 * rem + 'px';
+			textDoM.innerHTML = text;
+			drawBackground(cxt);
+			drawHour(cxt, Hour, Minute);
+			drawMinute(cxt, Minute, Second);
+			drawSecond(cxt, Second);
+			drawLastDot(cxt);
+		}
+		function drawBackground(cxt){
+			//表盘黑圈
+			var linewidth = 10 * rem;
+			var backR = r - linewidth/2;
+			cxt.save();
+			cxt.translate(r, r);
+			cxt.beginPath();
+			cxt.arc(0, 0, backR, 0, Math.PI * 2);
+			cxt.lineWidth = linewidth;
+			cxt.stroke();
+			//表盘刻度'点'
+			var dotR = r - 18 * rem;
+			for(var i = 0; i < 60; i++){
+				var x = Math.cos(6 * i * Math.PI/180) * dotR;
+				var y = Math.sin(6 * i * Math.PI/180) * dotR;
+				cxt.beginPath();
+				cxt.arc(x, y , 2.3 * rem, 0, 2*Math.PI);
+				if(i%5 === 0){
+					cxt.fillStyle = '#000';
+				}else{
+					cxt.fillStyle = '#ccc';
+				}
+				cxt.fill();
+			}
+			//表盘文字
+			var textR = r - 30 * rem;
+			var textNumbers = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2];
+			for(var i = 0; i < textNumbers.length; i++){
+				var x = Math.cos(30 * i * Math.PI/180) * textR;
+				var y = Math.sin(30 * i * Math.PI/180) * textR;
+				cxt.beginPath();
+				cxt.fillStyle = '#000';
+				cxt.font = 18 * rem + 'px Arial';
+				cxt.textAlign = 'center';
+				cxt.textBaseline = 'middle';
+				cxt.fillText(textNumbers[i], x, y);
+			}
+			cxt.restore();
+		}
+		function drawHour(cxt, hour, minute){
+			var angle = hour * 30 * Math.PI/180 + minute * Math.PI/360;
+			cxt.save();
+			cxt.translate(r, r);
+			cxt.rotate(angle);
+			cxt.beginPath();
+			cxt.moveTo(0, 10);
+			cxt.lineTo(0, -r/2);
+			cxt.lineWidth = 5 * rem;
+			cxt.strokeStyle = '#000';
+			cxt.lineCap = 'round';
+			cxt.stroke();
+			cxt.restore();
+		}
+		function drawMinute(cxt, minute, second){
+			var angle = minute * 6 * Math.PI/180 + second * Math.PI/1800;
+			cxt.save();
+			cxt.translate(r, r);
+			cxt.rotate(angle);
+			cxt.beginPath();
+			cxt.moveTo(0, 10);
+			cxt.lineTo(0, -r + 34 * rem);
+			cxt.lineWidth = 3 * rem;
+			cxt.strokeStyle = '#000';
+			cxt.lineCap = 'round';
+			cxt.stroke();
+			cxt.restore();
+		}
+		function drawSecond(cxt, second){
+			var angle = second * 6 * Math.PI/180;
+			cxt.save();
+			cxt.translate(r, r);
+			cxt.rotate(angle);
+			cxt.beginPath();
+			cxt.moveTo(-2, 10);
+			cxt.lineTo(2, 10);
+			cxt.lineTo(1, -r + 20 * rem);
+			cxt.lineTo(-1, -r + 20 * rem);
+			cxt.closePath();
+			cxt.fillStyle = 'red';
+			cxt.fill();
+			cxt.restore();
+		}
+		function drawLastDot(cxt){
+			cxt.save();
+			cxt.translate(r, r);
+			cxt.beginPath();
+			cxt.arc(0, 0, 3 * rem, 0 , 2*Math.PI);
+			cxt.fillStyle = '#fff';
+			cxt.fill();
+			cxt.restore();
+		}
+	</script>
+</body>
+</html>
